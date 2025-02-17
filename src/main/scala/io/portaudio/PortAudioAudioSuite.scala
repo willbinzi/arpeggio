@@ -37,7 +37,7 @@ object PortAudioAudioSuite:
           .repeat
 
       def output: Pipe[F, Float, Nothing] =
-        _.chunks.foreach { chunk =>
+        _.chunkN(FRAMES_PER_BUFFER, allowFewer = false).foreach { chunk =>
           F.blocking {
             chunk.copyToArray(outputBuffer, 0)
             functions.Pa_WriteStream(
