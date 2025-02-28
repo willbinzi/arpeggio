@@ -11,9 +11,10 @@ object Main extends IOApp.Simple:
     .resource[IO]
     .use(audioSuite =>
       audioSuite.input
-        .through(
-          reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 1)
-        )
+        // .through(
+        //   reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 1)
+        // )
+        .through(pedals.octave.octaveUp)
         .through(audioSuite.output)
         .compile
         .drain
