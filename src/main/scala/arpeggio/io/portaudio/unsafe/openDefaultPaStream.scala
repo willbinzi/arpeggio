@@ -1,9 +1,7 @@
 package arpeggio
 package io.portaudio
+package unsafe
 
-import cats.effect.Resource
-import cats.effect.Sync
-import cats.syntax.functor.*
 import cbindings.portaudio.aliases.{PaError, PaStream}
 import cbindings.portaudio.enumerations.PaErrorCode
 import cbindings.portaudio.functions
@@ -34,12 +32,13 @@ private def outputStreamParams(using Zone): Ptr[PaStreamParameters] =
     hostApiSpecificStreamInfo = null
   )
 
-def defaultPaStream[F[_]](using
-    F: Sync[F]
-): Resource[F, Ptr[PaStream]] =
-  Resource.make[F, Ptr[PaStream]](F.delay(Zone { implicit z =>
+private[portaudio] def openDefaultPaStream(): Ptr[PaStream] =
+  Zone { implicit z => // Zone is for allocating memory for stream parameters
+    // Pa_OpenStream will store a PaStream pointer in ppStream
+    // We immediately load the PaStream pointer from ppStream and return it as the result of this method
+    // ppStream itself is not needed beyond the lifetime of this method so we can use stackalloc
     val ppStream: Ptr[Ptr[PaStream]] = stackalloc()
-    val err: PaError = functions.Pa_OpenStream(
+    val errOpenStream: PaError = functions.Pa_OpenStream(
       stream = ppStream,
       inputParameters = inputStreamParams,
       outputParameters = outputStreamParams,
@@ -50,15 +49,15 @@ def defaultPaStream[F[_]](using
       userData = null
     )
 
-    if err != PaErrorCode.paNoError then
-      throw new RuntimeException(s"Stream open terminated with exit code $err")
-    val e: PaError = functions.Pa_StartStream(!ppStream)
-    if e != PaErrorCode.paNoError then
-      throw new RuntimeException(s"Stream start terminated with exit code $e")
+    if errOpenStream != PaErrorCode.paNoError then
+      throw new RuntimeException(
+        s"Stream open terminated with exit code $errOpenStream"
+      )
+    val errStartStream: PaError = functions.Pa_StartStream(!ppStream)
+    if errStartStream != PaErrorCode.paNoError then
+      throw new RuntimeException(
+        s"Stream start terminated with exit code $errStartStream"
+      )
+
     !ppStream
-  }))(pStream =>
-    F.delay {
-      functions.Pa_StopStream(pStream)
-      functions.Pa_CloseStream(pStream)
-    }.void
-  )
+  }
