@@ -26,7 +26,7 @@ def schroeder[F[_]: Concurrent](
   )
 
 def gain(decay: Duration, predelay: Duration): Float =
-  scala.math.pow(2, (-3f * predelay.toMicros) / decay.toMicros).toFloat
+  Math.pow(2, (-3f * predelay.toMicros) / decay.toMicros).toFloat
 
 def allPassStage[F[_]: Concurrent](
     repeatGain: Float,
