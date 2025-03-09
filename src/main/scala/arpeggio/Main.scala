@@ -8,7 +8,7 @@ import scala.concurrent.duration.*
 
 object Main extends IOApp.Simple:
   def run: IO[Unit] = PortAudioAudioSuite
-    .resource[IO]
+    .default[IO]
     .use(audioSuite =>
       audioSuite.input
         .through(

@@ -5,6 +5,8 @@ import arpeggio.boxing.toBytePointer
 import arpeggio.constants.FRAMES_PER_BUFFER
 import arpeggio.io.AudioSuite
 import cats.effect.{Resource, Sync}
+import cats.syntax.functor.toFunctorOps
+import cbindings.portaudio.aliases.PaStream
 import cbindings.portaudio.functions
 import fs2.{Chunk, Pipe, Pull, Stream}
 
@@ -12,10 +14,10 @@ import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.UnsignedRichInt
 
 object PortAudioAudioSuite:
-  def resource[F[_]](using F: Sync[F]): Resource[F, AudioSuite[F]] =
+  def default[F[_]](using F: Sync[F]): Resource[F, AudioSuite[F]] =
     for {
-      _ <- initPortAudio[F]
-      pStream <- defaultPaStream[F]
+      _ <- initPortAudio
+      pStream <- defaultPaStream
     } yield new AudioSuite[F]:
       def input: Stream[F, Float] =
         Pull
@@ -45,3 +47,15 @@ object PortAudioAudioSuite:
             ()
           }
         }
+
+  private def initPortAudio[F[_]](using F: Sync[F]): Resource[F, Unit] =
+    Resource.make(F.delay(functions.Pa_Initialize()).void)(_ =>
+      F.delay(functions.Pa_Terminate()).void
+    )
+
+  private def defaultPaStream[F[_]](using
+      F: Sync[F]
+  ): Resource[F, Ptr[PaStream]] =
+    Resource.make(F.delay(unsafe.openDefaultPaStream()))(pStream =>
+      F.delay(functions.Pa_CloseStream(pStream)).void
+    )
