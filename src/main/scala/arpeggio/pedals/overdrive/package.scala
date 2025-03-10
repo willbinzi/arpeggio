@@ -5,10 +5,10 @@ import arpeggio.routing.parallel
 import cats.effect.Concurrent
 
 def asymmetricClipping[F[_]](threshold: Float): Pedal[F] =
-  _.map(sample => math.min(sample, threshold))
+  _.map(sample => Math.min(sample, threshold))
 
 def symmetricClipping[F[_]](threshold: Float): Pedal[F] =
-  _.map(sample => math.min(math.max(sample, -threshold), threshold))
+  _.map(sample => Math.min(Math.max(sample, -threshold), threshold))
 
 def blended[F[_]: Concurrent](
     blend: Float,
