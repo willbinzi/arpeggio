@@ -6,8 +6,9 @@ import bindgen.interface.Binding
 
 import scala.scalanative.build._
 
-val catsEffectVersion = "3.5.1"
+val catsEffectVersion = "3.7-8f2b497"
 val fs2Version = "3.9.2"
+val fs2LocalVersion = "3.12.0-12-cef5cd5-20250331T124219Z-SNAPSHOT"
 val munitCatsEffectVersion = "2.0.0"
 
 lazy val core = crossProject(JVMPlatform, NativePlatform)
@@ -16,7 +17,7 @@ lazy val core = crossProject(JVMPlatform, NativePlatform)
   .settings(
     name := "arpeggio-core",
     libraryDependencies += "org.typelevel" %%% "cats-effect" % catsEffectVersion,
-    libraryDependencies += "co.fs2" %%% "fs2-core" % fs2Version,
+    libraryDependencies += "co.fs2" %%% "fs2-core" % fs2LocalVersion,
     libraryDependencies += "org.typelevel" %%% "munit-cats-effect" % munitCatsEffectVersion % Test
   )
 
@@ -62,6 +63,7 @@ val exampleLinkSettings = Seq(
     _.withLTO(LTO.full)
       .withMode(Mode.release)
       .withGC(GC.commix)
+      .withSemanticsConfig(_.withStrictExternCallSemantics(true))
   }
 )
 

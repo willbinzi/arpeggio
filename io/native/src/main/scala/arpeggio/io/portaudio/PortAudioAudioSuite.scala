@@ -40,7 +40,7 @@ object PortAudioAudioSuite:
                 functions.Pa_ReadStream(
                   stream = pStream,
                   buffer = inputBuffer.atUnsafe(0).toBytePointer,
-                  frames = FRAMES_PER_BUFFER.toULong
+                  frames = FRAMES_PER_BUFFER.toCSize
                 )
                 Chunk.ArraySlice(inputBuffer, 0, FRAMES_PER_BUFFER)
               })
@@ -61,7 +61,7 @@ object PortAudioAudioSuite:
                 functions.Pa_WriteStream(
                   stream = pStream,
                   buffer = array.atUnsafe(offset).toBytePointer,
-                  frames = length.toULong
+                  frames = length.toCSize
                 )
               } *> cyclicBarrier.await
             }
