@@ -23,7 +23,7 @@ private[portaudio] def openPaStream(
     inputParameters = pInputStreamParams.getOrElse(null),
     outputParameters = pOutputStreamParams.getOrElse(null),
     sampleRate = constants.SAMPLE_RATE,
-    framesPerBuffer = constants.FRAMES_PER_BUFFER.toULong,
+    framesPerBuffer = constants.FRAMES_PER_BUFFER.toCSize,
     streamFlags = PaStreamFlags.paClipOff,
     streamCallback = null,
     userData = null

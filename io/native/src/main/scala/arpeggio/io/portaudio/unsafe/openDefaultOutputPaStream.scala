@@ -19,6 +19,5 @@ private def defaultOutputStreamParams(using Zone): Ptr[PaStreamParameters] =
   )
 
 private[portaudio] def openDefaultOutputPaStream(): Ptr[PaStream] =
-  Zone { implicit z => // Zone is for allocating memory for stream parameters
-    openPaStream(pOutputStreamParams = Some(defaultOutputStreamParams))
-  }
+  // Zone is for allocating memory for stream parameters
+  Zone(openPaStream(pOutputStreamParams = Some(defaultOutputStreamParams)))
