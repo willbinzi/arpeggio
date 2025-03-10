@@ -2,6 +2,7 @@ package arpeggio
 package pedals.delay
 
 import arpeggio.constants.SAMPLE_RATE
+import arpeggio.pedals.volume.adjustLevel
 import arpeggio.pubsub.ChunkedChannel.*
 import arpeggio.pubsub.ChunkedTopic.*
 import arpeggio.routing.parallel
@@ -33,7 +34,7 @@ def echo[F[_]: Concurrent](
 ): Pedal[F] =
   parallel(
     identity,
-    echoRepeats(repeatGain, delayTime).andThen(_.map(_ * repeatGain))
+    echoRepeats(repeatGain, delayTime).andThen(adjustLevel(repeatGain))
   )
 
 def echoRepeats[F[_]: Concurrent](
@@ -44,7 +45,7 @@ def echoRepeats[F[_]: Concurrent](
     topic <- Stream.eval(ChunkedTopic[F, Float])
     outStream <- Stream.resource(topic.subscribeAwait(1))
     feedbackStream <- Stream.resource(
-      topic.subscribeAwait(1).map(_.map(_ * repeatGain))
+      topic.subscribeAwait(1).map(adjustLevel(repeatGain))
     )
     out <- outStream
       .concurrently(

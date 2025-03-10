@@ -2,6 +2,7 @@ package arpeggio
 package pedals.reverb
 
 import arpeggio.pedals.delay.echoRepeats
+import arpeggio.pedals.volume.adjustLevel
 import arpeggio.routing.parallel
 import cats.effect.Concurrent
 
@@ -22,7 +23,7 @@ def schroeder[F[_]: Concurrent](
     )
       .andThen(allPassStage(0.7, 5.millis))
       .andThen(allPassStage(0.7, 1700.micros))
-      .andThen(_.map(_ * mix))
+      .andThen(adjustLevel(mix))
   )
 
 def gain(decay: Duration, predelay: Duration): Float =
@@ -32,7 +33,7 @@ def allPassStage[F[_]: Concurrent](
     repeatGain: Float,
     delayTime: Duration
 ): Pedal[F] = parallel(
-  _.map(_ * -repeatGain),
+  adjustLevel(-repeatGain),
   echoRepeats(repeatGain, delayTime)
-    .andThen(_.map(_ * (1 - repeatGain * repeatGain)))
+    .andThen(adjustLevel(1 - repeatGain * repeatGain))
 )

@@ -1,6 +1,7 @@
 package arpeggio
 package pedals.overdrive
 
+import arpeggio.pedals.volume.adjustLevel
 import arpeggio.routing.parallel
 import cats.effect.Concurrent
 
@@ -15,6 +16,6 @@ def blended[F[_]: Concurrent](
     threshold: Float
 ): Pedal[F] =
   parallel(
-    _.map(_ * (1 - blend)),
-    symmetricClipping(threshold) andThen (_.map(_ * blend))
+    adjustLevel(1 - blend),
+    symmetricClipping(threshold) andThen adjustLevel(blend)
   )

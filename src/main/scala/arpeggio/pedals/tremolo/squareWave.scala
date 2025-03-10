@@ -13,7 +13,7 @@ def squareWave[F[_]: Concurrent](
 ): Pedal[F] =
   val halfCycleLengthInFrames =
     (cycleLength.toMicros * SAMPLE_RATE / 2000000).toInt
-  volume(
+  volume.sweep(
     (Stream.constant(1f).take(halfCycleLengthInFrames) ++
       Stream.constant(0f).take(halfCycleLengthInFrames)).repeat
   )
