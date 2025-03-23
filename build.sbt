@@ -56,6 +56,15 @@ val exampleLinkSettings = Seq(
   }
 )
 
+lazy val exampleDry = crossProject(NativePlatform)
+  .withoutSuffixFor(NativePlatform)
+  .crossType(CrossType.Pure)
+  .in(file("examples/dry"))
+  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(portaudio % "compile->compile;test->test")
+  .settings(exampleLinkSettings)
+  .settings(name := "arpeggio-example-dry")
+
 lazy val exampleReverb = crossProject(NativePlatform)
   .withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
