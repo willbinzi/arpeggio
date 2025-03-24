@@ -37,11 +37,9 @@ object PortAudioAudioSuite:
       def output: Pipe[F, Float, Nothing] =
         _.chunkN(FRAMES_PER_BUFFER, allowFewer = false).foreach { chunk =>
           F.blocking {
-            val outputBuffer = new Array[Float](FRAMES_PER_BUFFER)
-            chunk.copyToArray(outputBuffer, 0)
             functions.Pa_WriteStream(
               stream = pStream,
-              buffer = outputBuffer.atUnsafe(0).toBytePointer,
+              buffer = chunk.toArray.atUnsafe(0).toBytePointer,
               frames = FRAMES_PER_BUFFER.toULong
             )
             ()
