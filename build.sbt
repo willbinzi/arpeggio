@@ -6,13 +6,16 @@ import bindgen.interface.Binding
 
 import scala.scalanative.build._
 
+val catsEffectVersion = "3.5.1"
+val fs2Version = "3.9.2"
+
 lazy val core = crossProject(JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
   .settings(
     name := "arpeggio-core",
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.5.1",
-    libraryDependencies += "co.fs2" %%% "fs2-core" % "3.9.2"
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+    libraryDependencies += "co.fs2" %%% "fs2-core" % fs2Version
   )
 
 lazy val pedals = crossProject(JVMPlatform, NativePlatform)
@@ -20,6 +23,17 @@ lazy val pedals = crossProject(JVMPlatform, NativePlatform)
   .in(file("pedals"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(name := "arpeggio-pedals")
+
+lazy val javaSound = crossProject(JVMPlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("java-sound"))
+  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(pedals % "compile->compile;test->test")
+  .settings(
+    name := "arpeggio-java-sound",
+    libraryDependencies += "co.fs2" %%% "fs2-io" % fs2Version
+  )
 
 lazy val portaudio = crossProject(NativePlatform)
   .crossType(CrossType.Pure)

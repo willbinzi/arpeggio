@@ -5,7 +5,7 @@ arpeggio provides audio processing functionality using fs2. It was created as an
 It currently provides implementations of tremolo, overdrive, delay and reverb effects.
 
 ### Project setup
-The project is compiled for JVM and native, although there is currently no I/O interface implemented for the JVM version.
+The project is compiled for JVM and native. The JVM version compiles much faster, but the native version has considerably lower latency.
 
 See [here](https://scala-native.org/en/latest/user/setup.html) for instructions on how to set up a working Scala Native environment.
 
