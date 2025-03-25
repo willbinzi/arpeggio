@@ -1,5 +1,5 @@
 package arpeggio
-package pubsub
+package concurrent
 
 import cats.effect.{Concurrent, Resource}
 import cats.Functor

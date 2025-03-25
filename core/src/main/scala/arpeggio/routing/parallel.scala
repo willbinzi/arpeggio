@@ -1,7 +1,7 @@
 package arpeggio
 package routing
 
-import arpeggio.pubsub.ChunkedTopic.*
+import arpeggio.concurrent.ChunkedTopic.*
 import cats.data.NonEmptySeq
 import cats.effect.Concurrent
 import cats.syntax.traverse.toTraverseOps
