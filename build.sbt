@@ -24,24 +24,14 @@ lazy val pedals = crossProject(JVMPlatform, NativePlatform)
   .dependsOn(core % "compile->compile;test->test")
   .settings(name := "arpeggio-pedals")
 
-lazy val javaSound = crossProject(JVMPlatform)
-  .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("java-sound"))
-  .dependsOn(core % "compile->compile;test->test")
-  .dependsOn(pedals % "compile->compile;test->test")
-  .settings(
-    name := "arpeggio-java-sound",
-    libraryDependencies += "co.fs2" %%% "fs2-io" % fs2Version
-  )
-
-lazy val portaudio = crossProject(NativePlatform)
-  .crossType(CrossType.Pure)
-  .in(file("portaudio"))
-  .dependsOn(core % "compile->compile;test->test")
+lazy val io = crossProject(JVMPlatform, NativePlatform)
+  .crossType(CrossType.Full)
+  .in(file("io"))
   .enablePlugins(BindgenPlugin, VcpkgNativePlugin)
-  .settings(
-    name := "arpeggio-portaudio",
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(name := "arpeggio-io")
+  .jvmSettings(libraryDependencies += "co.fs2" %%% "fs2-io" % fs2Version)
+  .nativeSettings(
     vcpkgDependencies := VcpkgDependencies(
       "portaudio"
     ),
@@ -70,21 +60,21 @@ val exampleLinkSettings = Seq(
   }
 )
 
-lazy val exampleDry = crossProject(NativePlatform)
+lazy val exampleDry = crossProject(JVMPlatform, NativePlatform)
   .withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("examples/dry"))
   .dependsOn(core % "compile->compile;test->test")
-  .dependsOn(portaudio % "compile->compile;test->test")
+  .dependsOn(io % "compile->compile;test->test")
   .settings(exampleLinkSettings)
   .settings(name := "arpeggio-example-dry")
 
-lazy val exampleReverb = crossProject(NativePlatform)
+lazy val exampleReverb = crossProject(JVMPlatform, NativePlatform)
   .withoutSuffixFor(NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("examples/reverb"))
   .dependsOn(core % "compile->compile;test->test")
-  .dependsOn(portaudio % "compile->compile;test->test")
+  .dependsOn(io % "compile->compile;test->test")
   .dependsOn(pedals % "compile->compile;test->test")
   .settings(exampleLinkSettings)
   .settings(name := "arpeggio-example-reverb")
