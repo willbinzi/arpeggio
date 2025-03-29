@@ -39,7 +39,7 @@ object JavaSoundAudioSuite:
     } yield new AudioSuite[F]:
       def input: Stream[F, Float] =
         readInputStream(
-          F.delay {
+          F.blocking {
             inputLine.open(AUDIO_FORMAT)
             inputLine.start()
             new AudioInputStream(inputLine)
@@ -52,7 +52,7 @@ object JavaSoundAudioSuite:
         // See https://github.com/typelevel/fs2/blob/d7637b419b58e696763b4776f62887a10421f541/io/shared/src/main/scala/fs2/io/io.scala#L112
         // We do basically the same for the SourceDataLine (does not inherit from OutputStream)
         Stream
-          .bracket(F.delay {
+          .bracket(F.blocking {
             outputLine.open(AUDIO_FORMAT)
             outputLine.start()
             outputLine
