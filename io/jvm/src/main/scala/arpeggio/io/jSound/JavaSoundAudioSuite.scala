@@ -101,5 +101,5 @@ object JavaSoundAudioSuite:
   // 4 bytes per int sample
   private val BYTES_PER_BUFFER = constants.FRAMES_PER_BUFFER * 4
 
-  private val FULL_SCALE: Int = 32768
+  private val FULL_SCALE: Int = Int.MaxValue
   private val FULL_SCALE_RECIPROCAL: Float = 1f / FULL_SCALE
