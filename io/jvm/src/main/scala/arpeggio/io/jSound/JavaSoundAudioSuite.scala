@@ -9,7 +9,7 @@ import fs2.io.readInputStream
 import fs2.{Chunk, Pipe, Stream}
 
 import java.io.InputStream
-import java.nio.{ByteBuffer, IntBuffer}
+import java.nio.ByteBuffer
 import javax.sound.sampled.{
   AudioFormat,
   AudioInputStream,
@@ -72,22 +72,25 @@ object JavaSoundAudioSuite:
       }
 
   private def toFloatChunk(chunk: Chunk[Byte]): Chunk[Float] =
-    val intBuffer = IntBuffer.allocate(constants.FRAMES_PER_BUFFER)
-    intBuffer.put(chunk.toByteBuffer.asIntBuffer)
-    val floatArray = intBuffer.array.map(_.toFloat * FULL_SCALE_RECIPROCAL)
+    val intArray = new Array[Int](constants.FRAMES_PER_BUFFER)
+    chunk.toByteBuffer.asIntBuffer.get(intArray)
+    // Normalise to floats in the range [-1, 1]
+    val floatArray = intArray.map(_.toFloat * FULL_SCALE_RECIPROCAL)
     Chunk.ArraySlice(floatArray, 0, floatArray.length)
 
   private def toByteArray(chunk: Chunk[Float]): Array[Byte] =
     val byteBuffer = ByteBuffer.allocate(BYTES_PER_BUFFER)
     val Chunk.ArraySlice(values, offset, length) = chunk.toArraySlice
     byteBuffer.asIntBuffer.put(
-      values.map(float => (float * FULL_SCALE).toInt),
+      values.map(float => (float * FULL_SCALE).toInt), // Translate back to Ints
       offset,
       length
     )
     byteBuffer.array
 
   // Format reads/writes data according to the JVM Int encoding
+  // This is because PCM_FLOAT is not widely supported so we read as integers using PCM_SIGNED
+  // We then have to normalize the magnitude between 0 and 1 ourselves
   private val AUDIO_FORMAT = new AudioFormat(
     AudioFormat.Encoding.PCM_SIGNED,
     constants.SAMPLE_RATE, // sample rate
