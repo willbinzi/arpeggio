@@ -18,7 +18,7 @@ def parallelNonEmpty[F[_]: Concurrent](
     for {
       topic <- Stream.eval(ChunkedTopic[F, Float])
       pedalOutputs <- Stream.resource(
-        pedals.traverse(topic.subscribeAwait(1).map)
+        pedals.traverse(topic.subscribeAwaitUnbounded.map)
       )
       result <- pedalOutputs.reduce.concurrently(stream.through(topic.publish))
     } yield result

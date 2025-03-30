@@ -43,9 +43,9 @@ def echoRepeats[F[_]: Concurrent](
 ): Pedal[F] = stream =>
   for {
     topic <- Stream.eval(ChunkedTopic[F, Float])
-    outStream <- Stream.resource(topic.subscribeAwait(1))
+    outStream <- Stream.resource(topic.subscribeAwaitUnbounded)
     feedbackStream <- Stream.resource(
-      topic.subscribeAwait(1).map(adjustLevel(repeatGain))
+      topic.subscribeAwaitUnbounded.map(adjustLevel(repeatGain))
     )
     out <- outStream
       .concurrently(
