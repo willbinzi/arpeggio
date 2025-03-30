@@ -8,6 +8,7 @@ import scala.scalanative.build._
 
 val catsEffectVersion = "3.5.1"
 val fs2Version = "3.9.2"
+val munitCatsEffectVersion = "2.0.0"
 
 lazy val core = crossProject(JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -15,7 +16,8 @@ lazy val core = crossProject(JVMPlatform, NativePlatform)
   .settings(
     name := "arpeggio-core",
     libraryDependencies += "org.typelevel" %%% "cats-effect" % catsEffectVersion,
-    libraryDependencies += "co.fs2" %%% "fs2-core" % fs2Version
+    libraryDependencies += "co.fs2" %%% "fs2-core" % fs2Version,
+    libraryDependencies += "org.typelevel" %%% "munit-cats-effect" % munitCatsEffectVersion % Test
   )
 
 lazy val pedals = crossProject(JVMPlatform, NativePlatform)
