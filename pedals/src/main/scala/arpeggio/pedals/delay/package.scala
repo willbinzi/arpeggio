@@ -1,7 +1,6 @@
 package arpeggio
 package pedals.delay
 
-import arpeggio.concurrent.ChunkedChannel.*
 import arpeggio.concurrent.ChunkedTopic.*
 import arpeggio.constants.SAMPLE_RATE
 import arpeggio.pedals.volume.adjustLevel
@@ -16,17 +15,8 @@ def silence(time: Duration): Stream[Pure, Float] =
   val timeInFrames = time.toMicros * SAMPLE_RATE / 1000000
   Stream.constant(0f).take(timeInFrames.toLong)
 
-def buffered[F[_]: Concurrent](pedal: Pedal[F]): Pedal[F] = stream =>
-  Stream
-    .eval(ChunkedChannel.unbounded[F, Float])
-    .flatMap(channel =>
-      channel.stream
-        .through(pedal)
-        .concurrently(stream.through(channel.sendAll))
-    )
-
-def delayLine[F[_]: Concurrent](time: Duration): Pedal[F] =
-  buffered(silence(time) ++ _)
+def delayLine[F[_]](time: Duration): Pedal[F] =
+  silence(time) ++ _
 
 def echo[F[_]: Concurrent](
     repeatGain: Float,
