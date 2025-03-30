@@ -54,6 +54,9 @@ lazy val io = crossProject(JVMPlatform, NativePlatform)
     Compile / scalacOptions += "-Wconf:src=target/scala[^/]*/src_managed/.*:silent" 
   )
 
+val root = crossProject(JVMPlatform, NativePlatform)
+  .aggregate(core, io, pedals)
+
 val exampleLinkSettings = Seq(
   nativeConfig ~= {
     _.withLTO(LTO.full)
