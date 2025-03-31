@@ -35,12 +35,13 @@ object PortAudioAudioSuite:
           .repeat
 
       def output: Pipe[F, Float, Nothing] =
-        _.chunkN(FRAMES_PER_BUFFER, allowFewer = false).foreach { chunk =>
+        _.chunks.foreach { chunk =>
           F.blocking {
+            val Chunk.ArraySlice(array, offset, length) = chunk.toArraySlice
             functions.Pa_WriteStream(
               stream = pStream,
-              buffer = chunk.toArray.atUnsafe(0).toBytePointer,
-              frames = FRAMES_PER_BUFFER.toULong
+              buffer = array.atUnsafe(offset).toBytePointer,
+              frames = length.toULong
             )
             ()
           }
