@@ -8,7 +8,7 @@ import cats.effect.std.CyclicBarrier
 import cats.effect.{Concurrent, Resource, Sync}
 import cats.syntax.apply.catsSyntaxApplyOps
 import cats.syntax.functor.toFunctorOps
-import cbindings.portaudio.functions
+import cbindings.portaudio.{blocking, functions}
 import fs2.{Chunk, Pipe, Pull, Stream}
 
 import scala.scalanative.unsafe.UnsafeRichArray
@@ -37,7 +37,7 @@ object PortAudioAudioSuite:
             (Pull
               .eval(F.blocking {
                 val inputBuffer = new Array[Float](FRAMES_PER_BUFFER)
-                functions.Pa_ReadStream(
+                blocking.functions.Pa_ReadStream(
                   stream = pStream,
                   buffer = inputBuffer.atUnsafe(0).toBytePointer,
                   frames = FRAMES_PER_BUFFER.toCSize
@@ -58,7 +58,7 @@ object PortAudioAudioSuite:
               val Chunk.ArraySlice(array, offset, length) =
                 chunk.toArraySlice
               F.blocking {
-                functions.Pa_WriteStream(
+                blocking.functions.Pa_WriteStream(
                   stream = pStream,
                   buffer = array.atUnsafe(offset).toBytePointer,
                   frames = length.toCSize
