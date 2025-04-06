@@ -12,7 +12,7 @@ object Main extends IOApp.Simple:
     .use(audioSuite =>
       audioSuite.input
         .through(
-          reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 1)
+          reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 0.7)
         )
         .through(audioSuite.output)
         .compile
