@@ -13,8 +13,8 @@ object ChunkedTopic:
     def publish: Pipe[F, A, Nothing] =
       _.chunks.through(chunkTopic.publish)
 
-    def subscribeAwait(maxQueued: Int): Resource[F, Stream[F, A]] =
-      chunkTopic.subscribeAwait(maxQueued).map(_.unchunks)
+    def subscribeAwaitUnbounded: Resource[F, Stream[F, A]] =
+      chunkTopic.subscribeAwaitUnbounded.map(_.unchunks)
 
   object ChunkedTopic:
     def apply[F[_]: Concurrent, A]: F[ChunkedTopic[F, A]] =
