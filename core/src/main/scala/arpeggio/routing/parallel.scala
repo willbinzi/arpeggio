@@ -1,7 +1,7 @@
 package arpeggio
 package routing
 
-import arpeggio.concurrent.ChunkedTopic.*
+import arpeggio.concurrent.UnthrottledChunkedTopic.*
 import cats.data.NonEmptySeq
 import cats.effect.Concurrent
 import cats.syntax.traverse.toTraverseOps
@@ -16,9 +16,7 @@ def parallelNonEmpty[F[_]: Concurrent](
 ): Pedal[F] =
   stream =>
     for {
-      topic <- Stream.eval(ChunkedTopic[F, Float])
-      pedalOutputs <- Stream.resource(
-        pedals.traverse(topic.subscribeAwaitUnbounded.map)
-      )
+      topic <- Stream.eval(UnthrottledChunkedTopic[F, Float])
+      pedalOutputs <- Stream.resource(pedals.traverse(topic.subscribeAwait.map))
       result <- pedalOutputs.reduce.concurrently(stream.through(topic.publish))
     } yield result
