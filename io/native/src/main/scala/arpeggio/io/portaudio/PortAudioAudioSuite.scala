@@ -4,7 +4,7 @@ package io.portaudio
 import arpeggio.boxing.toBytePointer
 import arpeggio.constants.FRAMES_PER_BUFFER
 import arpeggio.io.AudioSuite
-import cats.effect.{Concurrent, Resource, Sync}
+import cats.effect.{Resource, Sync}
 import cats.syntax.functor.toFunctorOps
 import cbindings.portaudio.{blocking, functions}
 import fs2.{Chunk, Pipe, Pull, Stream}
@@ -13,9 +13,7 @@ import scala.scalanative.unsafe.UnsafeRichArray
 import scala.scalanative.unsigned.UnsignedRichInt
 
 object PortAudioAudioSuite:
-  def default[F[_]](using
-      F: Sync[F] with Concurrent[F]
-  ): Resource[F, AudioSuite[F]] =
+  def default[F[_]](using F: Sync[F]): Resource[F, AudioSuite[F]] =
     for {
       _ <- Resource.make(F.delay(functions.Pa_Initialize()).void)(_ =>
         F.delay(functions.Pa_Terminate()).void
