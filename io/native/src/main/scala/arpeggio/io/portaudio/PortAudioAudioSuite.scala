@@ -4,9 +4,7 @@ package io.portaudio
 import arpeggio.boxing.toBytePointer
 import arpeggio.constants.FRAMES_PER_BUFFER
 import arpeggio.io.AudioSuite
-import cats.effect.std.CyclicBarrier
 import cats.effect.{Concurrent, Resource, Sync}
-import cats.syntax.apply.catsSyntaxApplyOps
 import cats.syntax.functor.toFunctorOps
 import cbindings.portaudio.{blocking, functions}
 import fs2.{Chunk, Pipe, Pull, Stream}
@@ -22,11 +20,6 @@ object PortAudioAudioSuite:
       _ <- Resource.make(F.delay(functions.Pa_Initialize()).void)(_ =>
         F.delay(functions.Pa_Terminate()).void
       )
-      // We don't want to allow new data to be read from the input until we have written pending data to the output
-      // This is particularly important because we are still using Scala Native 0.4, which is single threaded
-      // Since both operations block the thread, we don't want to perform them any more than necessary
-      // Hence we use a cyclic barrier to sync the operations
-      cyclicBarrier <- Resource.eval(CyclicBarrier(2))
     } yield new AudioSuite[F]:
       def input: Stream[F, Float] =
         Stream
@@ -34,7 +27,7 @@ object PortAudioAudioSuite:
             F.blocking(functions.Pa_CloseStream(pStream)).void
           )
           .flatMap(pStream =>
-            (Pull
+            Pull
               .eval(F.blocking {
                 val inputBuffer = new Array[Float](FRAMES_PER_BUFFER)
                 blocking.functions.Pa_ReadStream(
@@ -45,7 +38,8 @@ object PortAudioAudioSuite:
                 Chunk.ArraySlice(inputBuffer, 0, FRAMES_PER_BUFFER)
               })
               .flatMap(Pull.output)
-              .streamNoScope ++ Stream.exec(cyclicBarrier.await)).repeat
+              .streamNoScope
+              .repeat
           )
 
       def output: Pipe[F, Float, Nothing] = stream =>
@@ -63,6 +57,7 @@ object PortAudioAudioSuite:
                   buffer = array.atUnsafe(offset).toBytePointer,
                   frames = length.toCSize
                 )
-              } *> cyclicBarrier.await
+                ()
+              }
             }
           )
