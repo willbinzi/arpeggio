@@ -6,9 +6,9 @@ import bindgen.interface.Binding
 
 import scala.scalanative.build._
 
-val catsEffectVersion = "3.5.1"
-val fs2Version = "3.9.2"
-val munitCatsEffectVersion = "2.0.0"
+val catsEffectVersion = "3.7.0-RC1"
+val fs2Version = "3.13.0-M6"
+val munitCatsEffectVersion = "2.2.0-RC1"
 
 lazy val core = crossProject(JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -62,6 +62,7 @@ val exampleLinkSettings = Seq(
     _.withLTO(LTO.full)
       .withMode(Mode.release)
       .withGC(GC.commix)
+      .withSemanticsConfig(_.withStrictExternCallSemantics(true))
   }
 )
 
