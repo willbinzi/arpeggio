@@ -12,3 +12,7 @@ given pointwiseAdd[F[_]]: Semigroup[Stream[F, Float]] =
         y: Stream[F, Float]
     ): Stream[F, Float] =
       x.zipWith(y)(_ + _)
+
+extension [F[_], A](stream: Stream[F, A])
+  def rechunkN(n: Int): Stream[F, A] =
+    stream.chunkN(n).unchunks
