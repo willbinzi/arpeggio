@@ -1,14 +1,14 @@
 package arpeggio
 
-import arpeggio.io.PlatformDefaultAudioSuite
+import arpeggio.io.PlatformDefaultAudioInterface
 import cats.effect.{IO, IOApp}
 
 object Main extends IOApp.Simple:
-  def run: IO[Unit] = PlatformDefaultAudioSuite
+  def run: IO[Unit] = PlatformDefaultAudioInterface
     .resource[IO]
-    .use(audioSuite =>
-      audioSuite.input
-        .through(audioSuite.output)
+    .use(interface =>
+      interface.input
+        .through(interface.output)
         .compile
         .drain
     )

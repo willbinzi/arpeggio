@@ -1,20 +1,20 @@
 package arpeggio
 
-import arpeggio.io.PlatformDefaultAudioSuite
+import arpeggio.io.PlatformDefaultAudioInterface
 import arpeggio.pedals.reverb
 import cats.effect.{IO, IOApp}
 
 import scala.concurrent.duration.*
 
 object Main extends IOApp.Simple:
-  def run: IO[Unit] = PlatformDefaultAudioSuite
+  def run: IO[Unit] = PlatformDefaultAudioInterface
     .resource[IO]
-    .use(audioSuite =>
-      audioSuite.input
+    .use(interface =>
+      interface.input
         .through(
           reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 0.7)
         )
-        .through(audioSuite.output)
+        .through(interface.output)
         .compile
         .drain
     )
