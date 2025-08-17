@@ -1,7 +1,7 @@
 package arpeggio
 package io.jSound
 
-import arpeggio.io.AudioSuite
+import arpeggio.io.AudioInterface
 import cats.effect.Sync
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
@@ -18,8 +18,8 @@ import javax.sound.sampled.{
   TargetDataLine
 }
 
-object JavaSoundAudioSuite:
-  def default[F[_]](using F: Sync[F]): F[AudioSuite[F]] =
+object JavaSoundAudioInterface:
+  def default[F[_]](using F: Sync[F]): F[AudioInterface[F]] =
     for {
       mixer <- F.delay(AudioSystem.getMixer(null)) // gets default mixer
       inputLine <- F.delay(
@@ -36,7 +36,7 @@ object JavaSoundAudioSuite:
           )
           .asInstanceOf[SourceDataLine]
       )
-    } yield new AudioSuite[F]:
+    } yield new AudioInterface[F]:
       def input: Stream[F, Float] =
         readInputStream(
           F.blocking {

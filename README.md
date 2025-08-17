@@ -14,26 +14,26 @@ The native version of the `io` module uses the [portaudio](https://www.portaudio
 ### Overview
 Arpeggio models an audio stream as an `fs2.Stream[F, Float]`. The audio can then be modified by applying instances of `fs2.Pipe[F, Float, Float]` (aliased to `Pedal[F]` within the project).
 
-An audio stream that reads from the default audio device, along with an output sink that plays audio can be obtained using `PlatformDefaultAudioSuite` from the `io` module.
+An audio stream that reads from the default audio device, along with an output sink that plays audio can be obtained using `PlatformDefaultAudioInterface` from the `io` module.
 
 We can then run the audio from the input device, through a pedal (here the Schroeder reverb implementation included in the `pedals` module) and through the output device like so:
 
 ```scala
-import arpeggio.io.PlatformDefaultAudioSuite
+import arpeggio.io.PlatformDefaultAudioInterface
 import arpeggio.pedals.reverb
 import cats.effect.{IO, IOApp}
 
 import scala.concurrent.duration.*
 
 object Main extends IOApp.Simple:
-  def run: IO[Unit] = PlatformDefaultAudioSuite
+  def run: IO[Unit] = PlatformDefaultAudioInterface
     .resource[IO]
-    .use(audioSuite =>
-      audioSuite.input
+    .use(interface =>
+      interface.input
         .through(
           reverb.schroeder(predelay = 30.millis, decay = 1.second, mix = 0.7)
         )
-        .through(audioSuite.output)
+        .through(interface.output)
         .compile
         .drain
     )

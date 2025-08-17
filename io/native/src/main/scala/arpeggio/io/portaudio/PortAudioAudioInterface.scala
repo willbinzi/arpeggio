@@ -3,7 +3,7 @@ package io.portaudio
 
 import arpeggio.boxing.toBytePointer
 import arpeggio.constants.FRAMES_PER_BUFFER
-import arpeggio.io.AudioSuite
+import arpeggio.io.AudioInterface
 import cats.effect.{Resource, Sync}
 import cats.syntax.functor.toFunctorOps
 import cbindings.portaudio.{blocking, functions}
@@ -12,13 +12,13 @@ import fs2.{Chunk, Pipe, Pull, Stream}
 import scala.scalanative.unsafe.UnsafeRichArray
 import scala.scalanative.unsigned.UnsignedRichInt
 
-object PortAudioAudioSuite:
-  def default[F[_]](using F: Sync[F]): Resource[F, AudioSuite[F]] =
+object PortAudioAudioInterface:
+  def default[F[_]](using F: Sync[F]): Resource[F, AudioInterface[F]] =
     for {
       _ <- Resource.make(F.delay(functions.Pa_Initialize()).void)(_ =>
         F.delay(functions.Pa_Terminate()).void
       )
-    } yield new AudioSuite[F]:
+    } yield new AudioInterface[F]:
       def input: Stream[F, Float] =
         Stream
           .bracket(F.blocking(unsafe.openDefaultInputPaStream()))(pStream =>
