@@ -1,6 +1,7 @@
 package arpeggio
 package pedals.reverb
 
+import arpeggio.constants.FRAMES_PER_BUFFER
 import arpeggio.pedals.delay.echoRepeats
 import arpeggio.pedals.volume.adjustLevel
 import arpeggio.routing.parallel
@@ -19,7 +20,12 @@ def schroeder[F[_]: Concurrent](
       // Create 4 echo stages with slightly differing delays and gain factors
       Seq(1f, 1.17f, 1.34f, 1.5f)
         .map(predelay * _)
-        .map(t => echoRepeats(gain(decay, t), t)): _*
+        .map(t =>
+          echoRepeats(gain(decay, t), t)
+            // Rechunking here (and in the allPassStage implementation below) greatly improves CPU consumption
+            // Without rechunking, the chunk size resulting from zipping all of these repeat streams together becomes extremely small
+            .andThen(_.rechunkN(FRAMES_PER_BUFFER))
+        ): _*
     )
       .andThen(allPassStage(0.7, 5.millis))
       .andThen(allPassStage(0.7, 1700.micros))
@@ -35,5 +41,6 @@ def allPassStage[F[_]: Concurrent](
 ): Pedal[F] = parallel(
   adjustLevel(-repeatGain),
   echoRepeats(repeatGain, delayTime)
+    .andThen(_.rechunkN(FRAMES_PER_BUFFER))
     .andThen(adjustLevel(1 - repeatGain * repeatGain))
 )
